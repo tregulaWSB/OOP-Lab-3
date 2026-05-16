@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import time
+from datetime import datetime
 
 class MenuItem(ABC):
   def __init__(self, name: str, price: float, description: str):
@@ -212,6 +213,44 @@ class Customer(Person):
   def add_loyalty_points(self, points: int):
     self.loyalty_points += points
     print(f"Klient {self.name} otrzymał {points} pkt. Razem: {self.loyalty_points} pkt.")
+
+class Order:
+  total_orders_count = 0
+  total_revenue = 0.0
+
+  def __init__(self, customer: Customer, items: list = []):
+    self.customer = customer
+    self.items = items
+    self.status = "Nowe"
+    
+    Order.total_orders_count += 1
+    self.order_id = Order.total_orders_count
+
+  def add_item(self, item: MenuItem):
+    self.items.append(item)
+
+  def calculate_total(self) -> float:
+    return sum(item.price for item in self.items)
+
+  def __generate_bill(self):
+    print(f"-----RACHUNEK DO ZAMÓWIENIA #{self.order_id}-----")
+    print(f"Data: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Klient: {self.customer.name} {self.customer.surname}")
+    
+    for item in self.items:
+      print(f" - {item.name} {item.price:.2f} zł")
+    
+    total = self.calculate_total()
+    print(f"SUMA CAŁKOWITA: {total:.2f} zł")
+
+  def finalize_order(self):
+    self.__generate_bill()
+    total = self.calculate_total()
+    Order.total_revenue += total
+    
+    points = int(total // 10)
+    self.customer.add_loyalty_points(points)
+    self.status = "Opłacone"
     
 def main():
   espresso = Drink("Espresso", 5, "1 shot z ekspresu kolbowego", temp = "hot", size = "S")
@@ -221,22 +260,46 @@ def main():
   ham_sandwich = Food("Kanapka z szynką", 14, "Bułka z serem, szynką, sałatą i pomidorem", type="śniadanie", is_vegan = False, prep_time_min = 3)
   scrambled_eggs = Food("Jajecznica z boczkiem", 18, "3 jajka, boczek i pieczywo", type="śniadanie", is_vegan = False, prep_time_min = 7)
 
-  apple_pie = Food("Brownie", 15, "Czekoladowe ciasto", type="deser", is_vegan = False, prep_time_min = 0)
+  brownie = Food("Brownie", 15, "Czekoladowe ciasto", type="deser", is_vegan = False, prep_time_min = 0)
 
   barista = Barista("Anna", "Kowalska", "F", 5000)
   chef = Chef("Jan", "Nowak", "M", 6500)
   customer_1 = Customer("Robert", "Szczęsny", "M")
   customer_2 = Customer("Jadwiga", "Lewandowska", "F", 100)
 
-  print("---Delegacja zadań---")
-  barista.assign_task(espresso)
-  barista.assign_task(americano)
-  chef.assign_task(ham_sandwich)
-  chef.assign_task(scrambled_eggs)
+  # zamówienia
+  order1 = Order(customer_1, [espresso, brownie])
+  order2 = Order(customer_2, [ice_latte, ham_sandwich, brownie])
 
-  print("---Przygotowanie zamówienia---")
+  # delegacja zamówień
+
+  # zamówienie 1
+  for item in order1.items:
+    if isinstance(item, Drink):
+      barista.assign_task(item)
+    else:
+      chef.assign_task(item)
+
+  # zamówienie 2
+  for item in order2.items:
+    if isinstance(item, Drink):
+      barista.assign_task(item)
+    else:
+      chef.assign_task(item)
+
+  # przygotowanie zamówień
   barista.perform_duties()
   chef.perform_duties()
+
+  # rozliczenie
+  order1.finalize_order()
+  order2.finalize_order()
+
+  # statystyki
+  print(f"Całkowity przychód: {Order.total_revenue:.2f} zł")
+  print(f"Liczba zrealizowanych zamówień: {Order.total_orders_count}")
+  print(f"Zatrudnieni pracownicy: {Employee.total_employees}")
+  print(f"Liczba wyszstkich klientów: {Customer.total_customers}")
 
 if __name__ == "__main__":
   main()
