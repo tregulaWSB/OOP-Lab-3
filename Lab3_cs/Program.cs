@@ -382,42 +382,230 @@ namespace Lab3_cs
   {
     static void Main()
     {
-      Drink espresso = new Drink("Espresso", 7.0, "1 shot z ekspresu kolbowego", "hot", "S");
-      Drink americano = new Drink("Americano M", 10.0, "Podwójne espresso z większą ilością wody", "hot", "M");
-      Drink lemonade = new Drink("Lemoniada", 13.0, "Gazowana woda z cytryną i świeżą miętą", "cold", "L");
-
-      Food sandwich = new Food("Kanapka z szynką", 14.0, "Ciabatta z żółtym serem, szynką parmeńską i pomidorem", "śniadanie", false, 2);
-      Food pancakes = new Food("Pancakes", 21.0, "Naleśniki z syropem klonowym", "śniadanie", false, 8);
-      Food brownie = new Food("Brownie", 15.0, "Mocno czekoladowe ciasto z orzechami włoskimi", "deser", false, 0);
-
       Barista barista = new Barista("Anna", "Kowalska", "F", 5000);
       Chef chef = new Chef("Jan", "Nowak", "M", 6500);
-      Customer customer = new Customer("Robert", "Szczęsny", "M", loyaltyPoints : 100);
 
-      Order order = new Order(customer, [espresso, sandwich]);
-      order.AddItem(lemonade);
-      order.AddItem(brownie);
-
-      Console.WriteLine($"Total: {order.CalculateTotal()}");
-
-      foreach (MenuItem item in order.Items)
+      var menu = new List<MenuItem>
       {
-        if (item is Drink)
+        new Drink("Espresso", 7.0, "1 shot z ekspresu kolbowego", "hot", "S"),
+        new Drink("Doppio", 9.0, "Podwójne espresso, 2 shoty z ekspresu kolbowego", "hot", "S"),
+        new Drink("Americano M", 10.0, "Podwójne espresso z większą ilością wody", "hot", "M"),
+        new Drink("Americano L", 12.0, "Podwójne espresso z większą ilością wody", "hot", "L"),
+        new Drink("Cappuccino M", 13.0, "Espresso ze spienionym mlekiem", "hot", "M"),
+        new Drink("Cappuccino L", 15.0, "Espresso ze spienionym mlekiem", "hot", "L"),
+        new Drink("Flat White M", 14.0, "Podwójne espresso z delikatnie spienionym mlekiem", "hot", "M"),
+        new Drink("Flat White L", 16.0, "Podwójne espresso z delikatnie spienionym mlekiem", "hot", "L"),
+        new Drink("Herbata Czarna", 9.0, "Herbata liściasta Earl Grey", "hot", "L"),
+        new Drink("Herbata Zimowa", 15.0, "Czarna herbata z pomarańczą, goździkami i miodem", "hot", "L"),
+        new Drink("Ice Latte", 17.0, "Espresso, kostki lodu i zimne mleko", "cold", "L"),
+        new Drink("Iced Caramel Macchiato", 18.0, "Kawa mrożona z syropem karmelowym", "cold", "L"),
+        new Drink("Lemoniada", 13.0, "Gazowana woda z cytryną i świeżą miętą", "cold", "L"),
+        new Drink("Sok pomarańczowy", 12.0, "Świeżo wyciskany sok z pomarańczy", "cold", "L"),
+        new Food("Francuskie śniadanie", 11.0, "Maślany rogalik z dżemem truskawkowym", "śniadanie", false, 1),
+        new Food("Kanapka z szynką", 14.0, "Ciabatta z żółtym serem, szynką parmeńską i pomidorem", "śniadanie", false, 2),
+        new Food("Tosty z awokado", 22.0, "Dwa tosty, pasta z awokado", "śniadanie", false, 5),
+        new Food("Jajecznica z boczkiem", 18.0, "Jajecznica z 3 jajek z cebulą i boczkiem, pieczywo", "śniadanie", false, 6),
+        new Food("Pancakes", 21.0, "Naleśniki z syropem klonowym", "śniadanie", false, 8),
+        new Food("Sernik z białą czekoladą", 17.0, "Kremowy sernik na kruchym spodzie", "deser", false, 0),
+        new Food("Brownie", 15.0, "Mocno czekoladowe ciasto z orzechami włoskimi", "deser", false, 0),
+        new Food("Szarlotka na gorąco", 16.0, "Z domowymi jabłkami i cynamonem, podawana na ciepło", "deser", true, 2),
+        new Food("Wegańskie ciasto marchewkowe", 15.0, "Puszyste ciasto z kremem z orzechów nerkowca", "deser", true, 0)
+      };
+
+      Console.Clear();
+      Console.WriteLine(new string('=', 50));
+      Console.WriteLine("SYMULATOR KAWIARNI");
+      Console.WriteLine(new string('=', 50));
+
+      Console.WriteLine("\nProszę, załóż kartę stałego klienta:");
+      string name = "";
+      while (string.IsNullOrWhiteSpace(name))
+      {
+        Console.Write("Podaj imię: ");
+        name = Console.ReadLine()?.Trim();
+        if (string.IsNullOrWhiteSpace(name))
         {
-          barista.AssignTask((IMenuItem)item);
-        }
-        else
-        {
-          chef.AssignTask((IMenuItem)item);
+          Console.WriteLine("Błąd: Podaj poprawne imię.");
         }
       }
 
-      barista.PerformDuties();
-      chef.PerformDuties();
+      string surname = "";
+      while (string.IsNullOrWhiteSpace(surname))
+      {
+        Console.Write("Podaj nazwisko: ");
+        surname = Console.ReadLine()?.Trim();
+        if (string.IsNullOrWhiteSpace(surname))
+        {
+          Console.WriteLine("Błąd: Podaj poprawne nazwisko.");
+        }
+      }
 
-      Console.WriteLine("");
+      string gender = "";
+      while (gender != "M" && gender != "F")
+      {
+        Console.Write("Podaj płeć (M/F): ");
+        gender = Console.ReadLine()?.Trim().ToUpper();
+        if (gender != "M" && gender != "F")
+        {
+          Console.WriteLine("Błąd: Wybierz 'M' lub 'F'.");
+        }
+      }
 
-      order.FinalizeOrder();
+      Customer customer = new Customer(name, surname, gender);
+      Console.WriteLine("\nKonto utworzone pomyślnie!\n");
+
+      while (true)
+      {
+        Console.WriteLine(new string('-', 30));
+        Console.WriteLine("MENU GŁÓWNE APLIKACJI");
+        Console.WriteLine(new string('-', 30));
+        Console.WriteLine("1. Przeglądaj menu kawiarni");
+        Console.WriteLine("2. Złóż nowe zamówienie");
+        Console.WriteLine("3. Moje konto i statystyki kawiarni");
+        Console.WriteLine("4. Wyjście z kawiarni");
+
+        Console.Write("\nWybierz opcję (1-4): ");
+        string wybor = Console.ReadLine()?.Trim();
+
+        switch (wybor)
+        {
+          case "1":
+            Console.Clear();
+            Console.WriteLine("--- NASZE MENU ---");
+            for (int i = 0; i < menu.Count; i++)
+            {
+              Console.WriteLine($"{i + 1}. {menu[i].DisplayInfo()}");
+            }
+            Console.Write("\nWciśnij dowolny przycisk, aby wrócić do głównego menu: ");
+            Console.ReadLine();
+            break;
+
+          case "2":
+            Console.Clear();
+            Order currentOrder = new Order(customer, new List<MenuItem>());
+            string error = "";
+            string orderString = "";
+
+            while (true)
+            {
+              Console.WriteLine("--- SKŁADANIE ZAMÓWIENIA ---\n");
+              if (!string.IsNullOrEmpty(error))
+              {
+                Console.WriteLine(error + "\n");
+              }
+              if (!string.IsNullOrEmpty(orderString))
+              {
+                Console.WriteLine($"Zamówienie: {orderString}\n");
+              }
+              
+              Console.WriteLine("Wpisz numer pozycji z menu, aby dodać do zamówienia lub wciśnij Enter aby zakończyć.");
+              for (int i = 0; i < menu.Count; i++)
+              {
+                Console.WriteLine($"{i + 1}. {menu[i].Name} {menu[i].Price:F2} zł");
+              }
+
+              Console.Write("\nTwój wybór: ");
+              string wyborProduktu = Console.ReadLine()?.Trim();
+
+              if (string.IsNullOrEmpty(wyborProduktu))
+              {
+                break;
+              }
+
+              try
+              {
+                int idxProduktu = int.Parse(wyborProduktu) - 1;
+                if (idxProduktu >= 0 && idxProduktu < menu.Count)
+                {
+                  MenuItem wybranyProdukt = menu[idxProduktu];
+                  currentOrder.AddItem(wybranyProdukt);
+                  if (!string.IsNullOrEmpty(orderString)) orderString += ", ";
+                  orderString += wybranyProdukt.Name;
+                  error = "";
+                }
+                else
+                {
+                  error = "Błąd: Brak wybranej pozycji w menu";
+                }
+              }
+              catch (FormatException)
+              {
+                error = "Błąd: Niepoprawny numer.";
+              }
+
+              Console.Clear();
+            }
+
+            Console.Clear();
+            if (currentOrder.Items.Count > 0)
+            {
+              Console.WriteLine("--- PODSUMOWANIE ZAMÓWIENIA ---\n");
+              Console.WriteLine($"Wybrane pozycje z menu: {orderString}.\n");
+              Console.WriteLine($"Dziękujemy za zamówienie. To będzie {currentOrder.CalculateTotal():F2} zł");
+              Console.Write("\nWciśnij dowolny przycisk, aby zapłacić: ");
+              Console.ReadLine();
+
+              Console.Clear();
+              currentOrder.FinalizeOrder();
+
+              Console.Write("\nWciśnij dowolny przycisk, aby zabrać rachunek: ");
+              Console.ReadLine();
+
+              Console.Clear();
+              Console.WriteLine("Twoje zamówienie jest w trakcie realizacji...\n");
+              
+              foreach (MenuItem item in currentOrder.Items)
+              {
+                if (item is Drink)
+                {
+                  barista.AssignTask((IMenuItem)item);
+                }
+                else
+                {
+                  chef.AssignTask((IMenuItem)item);
+                }
+              }
+
+              Console.WriteLine("");
+              barista.PerformDuties();
+              Console.WriteLine("");
+              chef.PerformDuties();
+            }
+            else
+            {
+              Console.WriteLine("Anulowano: Zamówienie jest puste.");
+            }
+
+            Console.Write("\nWciśnij dowolny przycisk, aby wrócić do głównego menu: ");
+            Console.ReadLine();
+            break;
+
+          case "3":
+            Console.Clear();
+            Console.WriteLine("--- MOJE KONTO ---");
+            Console.WriteLine(customer.DisplayInfo());
+            Console.WriteLine($"Zebrane punkty lojalnościowe: {customer.LoyaltyPoints}");
+
+            Console.WriteLine("\n--- STATYSTYKI LOKALU ---");
+            Console.WriteLine($"Całkowity obrót: {Order.TotalRevenue:F2} zł");
+            Console.WriteLine($"Zrealizowane zamówienia: {Order.TotalOrdersCount}");
+            Console.WriteLine($"Ilość zarejestrowanych klientów w systemie: {Customer.TotalCustomers}");
+
+            Console.Write("\nWciśnij dowolny przycisk, aby wrócić do głównego menu: ");
+            Console.ReadLine();
+            break;
+
+          case "4":
+            Console.WriteLine($"\nDziękujemy za wizytę, {customer.Name}! Do zobaczenia ponownie.");
+            return;
+
+          default:
+            Console.WriteLine("");
+            break;
+        }
+
+        Console.Clear();
+      }      
     }
   }
 }
