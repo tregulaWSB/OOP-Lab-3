@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace Lab3_cs
 {
@@ -143,6 +144,187 @@ namespace Lab3_cs
     }
   }
 
+  class Person
+  {
+    public string Name { get; set; }
+    public string Surname { get; set; }
+    protected string gender;
+
+    public string Gender
+    {
+      get { return gender; }
+      set
+      {
+        if (value != "M" && value != "F")
+        {
+          throw new ArgumentException("Nieprawidłowa płeć.");
+        }
+        gender = value;
+      }
+    }
+
+    public Person(string name, string surname, string gender)
+    {
+      this.Name = name;
+      this.Surname = surname;
+      this.Gender = gender;
+    }
+
+    public string DisplayInfo()
+    {
+      string gender = Gender == "M" ? "mężczyzna" : "kobieta";
+      return $"Imię: {Name}, nazwisko: {Surname}, płeć: {gender}";
+    }
+  }
+
+  interface IEmployee
+  {
+    void AssignTask(IMenuItem item);
+    void PerformDuties();
+  }
+
+  class Employee : Person
+  {
+    protected double salary;
+    public List<IMenuItem> Tasks { get; private set; }
+    public static int TotalEmployees = 0;
+
+    public double Salary
+    {
+      get { return salary; }
+      set
+      {
+        if (value < 0)
+        {
+          throw new ArgumentException("Pensja nie może być ujemna.");
+        }
+        salary = value;
+      }
+    }
+
+    public Employee(string name, string surname, string gender, double salary) : base(name, surname, gender)
+    {
+      this.Salary = salary;
+      this.Tasks = new List<IMenuItem>();
+      TotalEmployees++;
+    }
+  }
+
+  class Barista : Employee, IEmployee
+  {
+    public Barista(string name, string surname, string gender, double salary) : base(name, surname, gender, salary) {}
+
+    public void AssignTask(IMenuItem item)
+    {
+      if (!(item is Drink))
+      {
+        throw new ArgumentException("Barista może przygotowywać wyłącznie napoje.");
+      }
+      Tasks.Add(item);      
+      string itemName = ((MenuItem)item).Name;
+      if (Gender == "M")
+      {
+        Console.WriteLine($"[Zlecenie] Barista {Name} przyjął zamówienie na: {itemName}");
+      }
+      else
+      {
+        Console.WriteLine($"[Zlecenie] Barista {Name} przyjęła zamówienie na: {itemName}");
+      }
+    }
+
+    public void PerformDuties()
+    {
+      if (Tasks.Count == 0) return;
+      Console.WriteLine($"Barista {Name} rozpoczyna przygotowywanie napojów...");
+      foreach (IMenuItem item in Tasks)
+      {
+        item.Prepare();
+      }
+      Tasks.Clear();
+      if (Gender == "M")
+      {
+        Console.WriteLine($"Barista {Name} wydał wszystkie napoje.");
+      }
+      else
+      {
+        Console.WriteLine($"Barista {Name} wydała wszystkie napoje.");
+      }
+    }
+  }
+
+  class Chef : Employee, IEmployee
+  {
+    public Chef(string name, string surname, string gender, double salary) : base(name, surname, gender, salary) {}
+
+    public void AssignTask(IMenuItem item)
+    {
+      if (!(item is Food))
+      {
+        throw new ArgumentException("Kucharz może przygotowywać wyłącznie jedzenie.");
+      }
+      Tasks.Add(item);
+      string itemName = ((MenuItem)item).Name;
+      if (Gender == "M")
+      {
+        Console.WriteLine($"[Zlecenie] Kucharz {Name} przyjął zamówienie na: {itemName}");
+      }
+      else
+      {
+        Console.WriteLine($"[Zlecenie] Kucharz {Name} przyjęła zamówienie na: {itemName}");
+      }
+    }
+
+    public void PerformDuties()
+    {
+      if (Tasks.Count == 0) return;
+      Console.WriteLine($"Kucharz {Name} rozpoczyna przygotowywanie jedzenia...");
+      foreach (IMenuItem item in Tasks)
+      {
+        item.Prepare();
+      }
+      Tasks.Clear();
+      if (Gender == "M")
+      {
+        Console.WriteLine($"Kucharz {Name} przygotował wszystkie dania.");
+      }
+      else
+      {
+        Console.WriteLine($"Kucharz {Name} przygotowała wszystkie dania.");
+      }
+    }
+  }
+
+  class Customer : Person
+  {
+    protected int loyaltyPoints;
+    public static int TotalCustomers = 0;
+
+    public int LoyaltyPoints
+    {
+      get { return loyaltyPoints; }
+      set
+      {
+        if (value < 0)
+        {
+          throw new ArgumentException("Punkty lojalnościowe nie mogą być ujemne.");
+        }
+        loyaltyPoints = value;
+      }
+    }
+
+    public Customer(string name, string surname, string gender, int loyaltyPoints = 0) : base(name, surname, gender)
+    {
+      this.LoyaltyPoints = loyaltyPoints;
+      TotalCustomers++;
+    }
+
+    public void AddLoyaltyPoints(int points)
+    {
+      LoyaltyPoints += points;
+      Console.WriteLine($"Klient {Name} otrzymał {points} pkt. Razem: {LoyaltyPoints} pkt.");
+    }
+  }
+
   class Program
   {
     static void Main()
@@ -155,13 +337,23 @@ namespace Lab3_cs
       Food pancakes = new Food("Pancakes", 21.0, "Naleśniki z syropem klonowym", "śniadanie", false, 8);
       Food brownie = new Food("Brownie", 15.0, "Mocno czekoladowe ciasto z orzechami włoskimi", "deser", false, 0);
 
-      Console.WriteLine(espresso.DisplayInfo());
-      Console.WriteLine(americano.DisplayInfo());
-      Console.WriteLine(sandwich.DisplayInfo());
-      Console.WriteLine(pancakes.DisplayInfo());
+      Barista barista = new Barista("Anna", "Kowalska", "F", 5000);
+      Chef chef = new Chef("Jan", "Nowak", "M", 6500);
+      Customer customer = new Customer("Robert", "Szczęsny", "M", loyaltyPoints : 100);
 
-      lemonade.Prepare();
-      brownie.Prepare();
+      Console.WriteLine(barista.DisplayInfo());
+      Console.WriteLine(chef.DisplayInfo());
+      Console.WriteLine(customer.DisplayInfo());
+
+      barista.AssignTask(espresso);
+      barista.AssignTask(lemonade);
+
+      chef.AssignTask(sandwich);
+      chef.AssignTask(brownie);
+
+      barista.PerformDuties();
+      chef.PerformDuties();
+      customer.AddLoyaltyPoints(1000);
     }
   }
 }
