@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import time
 from datetime import datetime
+import os
 
 class MenuItem(ABC):
   def __init__(self, name: str, price: float, description: str):
@@ -154,7 +155,6 @@ class Barista(Employee):
 
   def perform_duties(self):
     if not self.tasks:
-      print(f"Barista {self.name} nie ma aktualnie żadnych zamówień.")
       return  
         
     print(f"Barista {self.name} rozpoczyna przygotowywanie napojów...")
@@ -179,7 +179,6 @@ class Chef(Employee):
 
   def perform_duties(self):
     if not self.tasks:
-      print(f"Kucharz {self.name} nie ma aktualnie żadnych zamówień.")
       return
       
     print(f"Kucharz {self.name} rozpoczyna przygotowywanie jedzenia...")
@@ -251,55 +250,175 @@ class Order:
     points = int(total // 10)
     self.customer.add_loyalty_points(points)
     self.status = "Opłacone"
+
+def clear():
+  os.system('cls' if os.name == 'nt' else 'clear')
     
 def main():
-  espresso = Drink("Espresso", 5, "1 shot z ekspresu kolbowego", temp = "hot", size = "S")
-  americano = Drink("Americano", 8, "2 shoty z ekspresu kolbowego, więcej wody", temp = "hot", size = "M")
-  ice_latte = Drink("Ice Latte", 15, "1 shot z ekspresu kolbowego, 3 kostki lodu, spienione mleko", temp = "cold", size = "M")
-
-  ham_sandwich = Food("Kanapka z szynką", 14, "Bułka z serem, szynką, sałatą i pomidorem", type="śniadanie", is_vegan = False, prep_time_min = 3)
-  scrambled_eggs = Food("Jajecznica z boczkiem", 18, "3 jajka, boczek i pieczywo", type="śniadanie", is_vegan = False, prep_time_min = 7)
-
-  brownie = Food("Brownie", 15, "Czekoladowe ciasto", type="deser", is_vegan = False, prep_time_min = 0)
-
   barista = Barista("Anna", "Kowalska", "F", 5000)
   chef = Chef("Jan", "Nowak", "M", 6500)
-  customer_1 = Customer("Robert", "Szczęsny", "M")
-  customer_2 = Customer("Jadwiga", "Lewandowska", "F", 100)
 
-  # zamówienia
-  order1 = Order(customer_1, [espresso, brownie])
-  order2 = Order(customer_2, [ice_latte, ham_sandwich, brownie])
+  menu = [
+    Drink("Espresso", 7.0, "1 shot z ekspresu kolbowego", temp="hot", size="S"),
+    Drink("Doppio", 9.0, "Podwójne espresso, 2 shoty z ekspresu kolbowego", temp="hot", size="S"),
+    Drink("Americano M", 10.0, "Podwójne espresso z większą ilością wody", temp="hot", size="M"),
+    Drink("Americano L", 12.0, "Podwójne espresso z większą ilością wody", temp="hot", size="L"),
+    Drink("Cappuccino M", 13.0, "Espresso ze spienionym mlekiem", temp="hot", size="M"),
+    Drink("Cappuccino L", 15.0, "Espresso ze spienionym mlekiem", temp="hot", size="L"),
+    Drink("Flat White M", 14.0, "Podwójne espresso z delikatnie spienionym mlekiem", temp="hot", size="M"),
+    Drink("Flat White L", 16.0, "Podwójne espresso z delikatnie spienionym mlekiem", temp="hot", size="L"),
+    Drink("Herbata Czarna", 9.0, "Herbata liściasta Earl Grey", temp="hot", size="L"),
+    Drink("Herbata Zimowa", 15.0, "Czarna herbata z pomarańczą, goździkami i miodem", temp="hot", size="L"),
+    Drink("Ice Latte", 17.0, "Espresso, kostki lodu i zimne mleko", temp="cold", size="L"),
+    Drink("Iced Caramel Macchiato", 18.0, "Kawa mrożona z syropem karmelowym", temp="cold", size="L"),
+    Drink("Lemoniada", 13.0, "Gazowana woda z cytryną i świeżą miętą", temp="cold", size="L"),
+    Drink("Sok pomarańczowy", 12.0, "Świeżo wyciskany sok z pomarańczy", temp="cold", size="L"),
+    Food("Francuskie śniadanie", 11.0, "Maślany rogalik z dżemem truskawkowym", type="śniadanie", is_vegan=False, prep_time_min=1),
+    Food("Kanapka z szynką", 14.0, "Ciabatta z żółtym serem, szynką parmeńską i pomidorem", type="śniadanie", is_vegan=False, prep_time_min=2),
+    Food("Tosty z awokado", 22.0, "Dwa tosty, pasta z awokado", type="śniadanie", is_vegan=False, prep_time_min=5),
+    Food("Jajecznica z boczkiem", 18.0, "Jajecznica z 3 jajek z cebulą i boczkiem, pieczywo", type="śniadanie", is_vegan=False, prep_time_min=6),
+    Food("Pancakes", 21.0, "Naleśniki z syropem klonowym", type="śniadanie", is_vegan=False, prep_time_min=8),
+    Food("Sernik z białą czekoladą", 17.0, "Kremowy sernik na kruchym spodzie", type="deser", is_vegan=False, prep_time_min=0),
+    Food("Brownie", 15.0, "Mocno czekoladowe ciasto z orzechami włoskimi", type="deser", is_vegan=False, prep_time_min=0),
+    Food("Szarlotka na gorąco", 16.0, "Z domowymi jabłkami i cynamonem, podawana na ciepło", type="deser", is_vegan=True, prep_time_min=2),
+    Food("Wegańskie ciasto marchewkowe", 15.0, "Puszyste ciasto z kremem z orzechów nerkowca", type="deser", is_vegan=True, prep_time_min=0)
+  ]
 
-  # delegacja zamówień
+  clear()
+  print("=" * 50)
+  print("SYMULATOR KAWIARNI")
+  print("=" * 50)
 
-  # zamówienie 1
-  for item in order1.items:
-    if isinstance(item, Drink):
-      barista.assign_task(item)
-    else:
-      chef.assign_task(item)
+  print("\nProszę, załóż kartę stałego klienta:")
+  name = ""
+  while not name:
+    name = input("Podaj imię: ").strip()
+    if not name:
+      print("Błąd: Podaj poprawne imię.")
 
-  # zamówienie 2
-  for item in order2.items:
-    if isinstance(item, Drink):
-      barista.assign_task(item)
-    else:
-      chef.assign_task(item)
+  surname = ""
+  while not surname:    
+    surname = input("Podaj nazwisko: ").strip()
+    if not surname:
+      print("Błąd: Podaj poprawne nazwisko.")
+      
+  gender = ""
+  while gender not in ["M", "F"]:
+    gender = input("Podaj płeć (M/F): ").strip().upper()
+    if gender not in ["M", "F"]:
+      print("Błąd: Wybierz 'M' lub 'F'.")
 
-  # przygotowanie zamówień
-  barista.perform_duties()
-  chef.perform_duties()
+  customer = Customer(name, surname, gender)
+  print(f"\nKonto utworzone pomyślnie!\n")
 
-  # rozliczenie
-  order1.finalize_order()
-  order2.finalize_order()
+  while True:
+    print("-" * 30)
+    print("MENU GŁÓWNE APLIKACJI")
+    print("-" * 30)
+    print("1. Przeglądaj menu kawiarni")
+    print("2. Złóż nowe zamówienie")
+    print("3. Moje konto i statystyki kawiarni")
+    print("4. Wyjście z kawiarni")
+    
+    wybor = input("\nWybierz opcję (1-4): ").strip()
 
-  # statystyki
-  print(f"Całkowity przychód: {Order.total_revenue:.2f} zł")
-  print(f"Liczba zrealizowanych zamówień: {Order.total_orders_count}")
-  print(f"Zatrudnieni pracownicy: {Employee.total_employees}")
-  print(f"Liczba wyszstkich klientów: {Customer.total_customers}")
+    match(wybor):
+      case "1":
+        clear()
+        print("--- NASZE MENU ---")
+        for idx, item in enumerate(menu, 1):
+          print(f"{idx}. {item.display_info()}")
+
+        input("\nWciśnij dowolny przycisk, aby wrócić do głównego menu: ")
+
+      case "2":    
+        clear()
+        current_order = Order(customer, [])
+
+        error = ""
+        order = ""
+
+        while True:
+          print("--- SKŁADANIE ZAMÓWIENIA ---\n")
+          if error:
+            print(error + "\n")
+          if order:
+            print(f"Zamówienie: {order}\n")
+          print("Wpisz numer pozycji z menu, aby dodać do zamówienia lub wciśnij Enter aby zakończyć.")
+          for idx, item in enumerate(menu, 1):
+            print(f"{idx}. {item.name} {item.price:.2f} zł")
+          
+          wybor_produktu = input("\nTwój wybór: ").strip()
+          
+          if wybor_produktu == "":
+            break
+          
+          try:
+            idx_produktu = int(wybor_produktu) - 1
+            if 0 <= idx_produktu < len(menu):
+              wybrany_produkt = menu[idx_produktu]
+              current_order.add_item(wybrany_produkt)
+              order += ", " if order else ""
+              order += wybrany_produkt.name
+              error = ""
+            else:
+              error = "Błąd: Brak wybranej pozycji w menu"
+          except ValueError:
+            error = "Błąd: Niepoprawny numer."
+
+          clear()
+
+        clear()
+        if current_order.items:
+          print("--- PODSUMOWANIE ZAMÓWIENIA ---\n")
+          print(f"Wybrane pozycje z menu: " + order + ".\n")
+          print(f"Dziękujemy za zamówienie. To będzie {current_order.calculate_total():.2f} zł")
+          input("\nWciśnij dowolny przycik, aby zapłacić: ")
+
+          clear()
+          current_order.finalize_order()
+
+          input("\nWciśnij dowolny przycik, aby zabrać rachunek: ")
+
+          clear()
+          print("Twoje zamówienie jest w trakcie realizacji...\n")
+          for item in current_order.items:
+            if isinstance(item, Drink):
+              barista.assign_task(item)
+            else:
+              chef.assign_task(item)
+
+          print("")
+          barista.perform_duties()
+          print("")
+          chef.perform_duties()
+
+        else:
+            print("Anulowano: Zamówienie jest puste.")
+
+        input("\nWciśnij dowolny przycisk, aby wrócić do głównego menu: ")
+
+      case "3":
+        clear()
+        print("--- MOJE KONTO ---")
+        print(customer.display_info())
+        print(f"Zebrane punkty lojalnościowe: {customer.loyalty_points}")
+        
+        print("\n--- STATYSTYKI LOKALU ---")
+        print(f"Całkowity obrót: {Order.total_revenue:.2f} zł")
+        print(f"Zrealizowane zamówienia: {Order.total_orders_count}")
+        print(f"Ilość zarejestrowanych klientów w systemie: {Customer.total_customers}")
+
+        input("\nWciśnij dowolny przycisk, aby wrócić do głównego menu: ")
+
+      case "4":
+        print(f"\nDziękujemy za wizytę, {customer.name}! Do zobaczenia ponownie.")
+        break
+        
+      case _:
+        print("")
+
+    clear()
 
 if __name__ == "__main__":
   main()
