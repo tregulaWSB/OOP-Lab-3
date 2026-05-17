@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lab3_cs
 {
@@ -325,6 +326,58 @@ namespace Lab3_cs
     }
   }
 
+  class Order
+  {
+    public Customer Customer { get; set; }
+    public List<MenuItem> Items { get; set; }
+    public string Status { get; set; }
+    public int OrderId { get; private set; }
+    public static int TotalOrdersCount = 0;
+    public static double TotalRevenue = 0.0;
+
+    public Order(Customer customer, List<MenuItem> items)
+    {
+      this.Customer = customer;
+      this.Items = items ?? new List<MenuItem>();
+      this.Status = "Nowe";
+      TotalOrdersCount++;
+      this.OrderId = TotalOrdersCount;
+    }
+
+    public void AddItem(MenuItem item)
+    {
+      Items.Add(item);
+    }
+
+    public double CalculateTotal()
+    {
+      return Items.Sum(item => item.Price);
+    }
+
+    private void GenerateBill()
+    {
+      Console.WriteLine($"-----RACHUNEK DO ZAMÓWIENIA #{OrderId}-----");
+      Console.WriteLine($"Data: {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}");
+      Console.WriteLine($"Klient: {Customer.Name} {Customer.Surname}");
+      foreach (MenuItem item in Items)
+      {
+        Console.WriteLine($" - {item.Name} {item.Price:F2} zł");
+      }
+      double total = CalculateTotal();
+      Console.WriteLine($"SUMA CAŁKOWITA: {total:F2} zł");
+    }
+
+    public void FinalizeOrder()
+    {
+      GenerateBill();
+      double total = CalculateTotal();
+      TotalRevenue += total;
+      int points = (int)(total / 10);
+      Customer.AddLoyaltyPoints(points);
+      Status = "Opłacone";
+    }
+  }
+
   class Program
   {
     static void Main()
@@ -341,19 +394,30 @@ namespace Lab3_cs
       Chef chef = new Chef("Jan", "Nowak", "M", 6500);
       Customer customer = new Customer("Robert", "Szczęsny", "M", loyaltyPoints : 100);
 
-      Console.WriteLine(barista.DisplayInfo());
-      Console.WriteLine(chef.DisplayInfo());
-      Console.WriteLine(customer.DisplayInfo());
+      Order order = new Order(customer, [espresso, sandwich]);
+      order.AddItem(lemonade);
+      order.AddItem(brownie);
 
-      barista.AssignTask(espresso);
-      barista.AssignTask(lemonade);
+      Console.WriteLine($"Total: {order.CalculateTotal()}");
 
-      chef.AssignTask(sandwich);
-      chef.AssignTask(brownie);
+      foreach (MenuItem item in order.Items)
+      {
+        if (item is Drink)
+        {
+          barista.AssignTask((IMenuItem)item);
+        }
+        else
+        {
+          chef.AssignTask((IMenuItem)item);
+        }
+      }
 
       barista.PerformDuties();
       chef.PerformDuties();
-      customer.AddLoyaltyPoints(1000);
+
+      Console.WriteLine("");
+
+      order.FinalizeOrder();
     }
   }
 }
